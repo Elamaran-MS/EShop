@@ -5,7 +5,6 @@ using EShop.Services.ShoppingCartAPI.Models.Dto;
 using EShop.Services.ShoppingCartAPI.Services.IService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection.PortableExecutable;
 
 namespace EShop.Services.ShoppingCartAPI.Controllers
 {
@@ -31,7 +30,7 @@ namespace EShop.Services.ShoppingCartAPI.Controllers
 
         [HttpGet("GetCart/{userId}")]
         public async Task<ResponseDto> GetCart(string userId)
-        {
+        { 
             try
             {
                 CartDto cartDto = new()
@@ -75,7 +74,7 @@ namespace EShop.Services.ShoppingCartAPI.Controllers
         {
             try
             {
-                var cartFromDb = await _db.CartHeaders.FirstAsync(u=>u.UserId==cartDto.CartHeader.UserId);
+                var cartFromDb = await _db.CartHeaders.FirstAsync(u => u.UserId == cartDto.CartHeader.UserId);
                 cartFromDb.CouponCode = cartDto.CartHeader.CouponCode;
                 _db.CartHeaders.Update(cartFromDb);
                 await _db.SaveChangesAsync();

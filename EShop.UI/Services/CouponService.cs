@@ -2,7 +2,6 @@
 using EShop.UI.Services.IService;
 using EShop.UI.Utility;
 
-
 namespace EShop.UI.Services
 {
     public class CouponService : ICouponService

@@ -1,0 +1,73 @@
+﻿using EShop.UI.Models;
+using EShop.UI.Services.IService;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using System.IdentityModel.Tokens.Jwt;
+
+namespace EShop.UI.Controllers
+{
+    public class CartController : Controller
+    {
+        private readonly ICartService _cartService;
+        public CartController(ICartService cartService)
+        {
+            _cartService = cartService;
+        }
+
+        [Authorize]
+        public async Task<IActionResult> CartIndex()
+        {
+            return View(await LoadCartDtoBasedOnLoggedInUser());
+        }
+
+        public async Task<IActionResult> Remove(int cartDetailsId)
+        {
+            var userId = User.Claims.Where(u => u.Type == JwtRegisteredClaimNames.Sub)?.FirstOrDefault()?.Value;
+            ResponseDto? response = await _cartService.RemoveFromCartAsync(cartDetailsId);
+            if (response != null && response.isSuccess)
+            {
+                TempData["success"] = "Cart updated successfully";
+                return RedirectToAction(nameof(CartIndex));
+            }
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ApplyCoupon(CartDto cartDto)
+        {
+            ResponseDto? response = await _cartService.ApplyCouponAsync(cartDto);
+            if (response != null && response.isSuccess)
+            {
+                TempData["success"] = "Cart updated successfully";
+                return RedirectToAction(nameof(CartIndex));
+            }
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RemoveCoupon(CartDto cartDto)
+        {
+            cartDto.CartHeader.CouponCode = "";
+            ResponseDto? response = await _cartService.ApplyCouponAsync(cartDto);
+            if (response != null && response.isSuccess)
+            {
+                TempData["success"] = "Cart updated successfully";
+                return RedirectToAction(nameof(CartIndex));
+            }
+            return View();
+        }
+
+        private async Task<CartDto> LoadCartDtoBasedOnLoggedInUser()
+        {
+            var userId = User.Claims.Where(u => u.Type == JwtRegisteredClaimNames.Sub)?.FirstOrDefault()?.Value;
+            ResponseDto? response = await _cartService.GetCartByUserIdAsync(userId);
+            if(response != null && response.isSuccess)
+            {
+                CartDto cartDto = JsonConvert.DeserializeObject<CartDto>(Convert.ToString(response.Result));
+                return cartDto;
+            }
+            return new CartDto();
+        }
+    }
+}
